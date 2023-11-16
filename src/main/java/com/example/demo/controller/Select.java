@@ -3,10 +3,9 @@ package com.example.demo.controller;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
@@ -17,6 +16,29 @@ import java.util.Map;
 @RestController
 @RequestMapping(value = "/func")
 public class Select {
+
+    @Value("${uploadFilePath}")
+    private String uploadFilePath;
+
+
+    @PostMapping("/uploadFile")
+    public String FileUpload(@RequestParam("jsonFile") MultipartFile file){
+        String name = file.getOriginalFilename();
+        if (!file.isEmpty()) {
+            try {
+                // 设置文件存储路径，确保该路径已存在
+                String filePath =  uploadFilePath + name;
+                BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(new File(filePath)));
+                stream.write(file.getBytes());
+                stream.close();
+                return "成功上传 " + name + " !";
+            } catch (IOException e) {
+                return "上传 " + name + " 失败 => " + e.getMessage();
+            }
+        } else {
+            return "上传失败，因为文件是空的.";
+        }
+    }
 
     @PostMapping("/chooseFile")
     public Map<String, String> chooseFile(@RequestParam("uploadedFile") MultipartFile multipartFile) {
